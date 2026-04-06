@@ -1,19 +1,37 @@
+```
+# Kotlin/Android build artifacts
+*.class
+*.jar
+*.war
+*.ear
+*.aar
+
+# Gradle
+.gradle/
+build/
+
+# Android
+*.apk
+*.ap_
+app/build/
+*/build/
+
+# IDE files
+.idea/
 *.iml
-.kotlin
-.gradle
-**/build/
-xcuserdata
-!src/**/build/
-local.properties
-.idea
+*.ipr
+*.iws
+.vscode/
+
+# Temp files
+*.tmp
+*.temp
+*.log
+
+# OS files
 .DS_Store
-captures
-.externalNativeBuild
-.cxx
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
-!*.xcworkspace/contents.xcworkspacedata
-**/xcshareddata/WorkspaceSettings.xcsettings
-node_modules/
+Thumbs.db
+
+# Local configuration
+local.properties
+```

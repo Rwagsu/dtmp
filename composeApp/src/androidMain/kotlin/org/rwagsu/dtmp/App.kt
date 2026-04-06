@@ -51,7 +51,7 @@ fun App() {
 
         ) {
             Text(text = "DTMP!", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            Text(text = "每天 6-10 点时, 如果充电器拔出...", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(text = "每天 6-10 点时，如果手机被拿起...", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Text(text = "以最大音量播放 Cansol - Tospy-Turvy.", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Switch(
                 checked = isEnabled,

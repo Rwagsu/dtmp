@@ -3,23 +3,62 @@ package org.rwagsu.dtmp
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.runBlocking
 
-class PowerDisconnectReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action == Intent.ACTION_POWER_DISCONNECTED) {
-            Log.d("OwOwO", "🔌 [Power] bang! 线被拔了!")
+class PickUpSensorListener(private val context: Context) : SensorEventListener {
+    private var lastX = 0f
+    private var lastY = 0f
+    private var lastZ = 0f
+    private var isInitialized = false
+    private val THRESHOLD = 2.5f // 加速度变化阈值
+    private val TIME_WINDOW = 3000L // 3 秒内检测变化
+    private var lastTriggerTime = 0L
 
-            // 申请临时唤醒锁，防止 Service 还没起来 CPU 就又睡着了
-            val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-            val wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Dtmp:WakeLock")
-            wakeLock.acquire(10000) // 锁 10 秒
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event == null || event.sensor.type != Sensor.TYPE_ACCELEROMETER) return
 
-            checkAndTriggerAlarm(context)
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
+
+        if (!isInitialized) {
+            lastX = x
+            lastY = y
+            lastZ = z
+            isInitialized = true
+            return
         }
+
+        val currentTime = System.currentTimeMillis()
+        
+        // 计算加速度变化量
+        val delta = kotlin.math.sqrt(
+            (x - lastX) * (x - lastX) +
+            (y - lastY) * (y - lastY) +
+            (z - lastZ) * (z - lastZ)
+        )
+
+        Log.d("OwOwO", "📱 [PickUp] Δ = $delta")
+
+        // 如果变化超过阈值，且不在冷却时间内，触发闹钟
+        if (delta > THRESHOLD && (currentTime - lastTriggerTime) > TIME_WINDOW) {
+            Log.d("OwOwO", "📱 [PickUp] 手机被拿起了! Δ = $delta")
+            checkAndTriggerAlarm(context)
+            lastTriggerTime = currentTime
+        }
+
+        lastX = x
+        lastY = y
+        lastZ = z
     }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
 
 class UnlockReceiver : BroadcastReceiver() {

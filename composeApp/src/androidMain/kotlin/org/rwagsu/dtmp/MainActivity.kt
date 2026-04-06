@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
@@ -24,11 +26,15 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            Toast.makeText(this, "GET! 开始搞怪吧! 😈", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "GET! 开始搞怪吧！😈", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "啊...... 你是不是...... 点错了? 😰", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "啊...... 你是不是...... 点错了？😰", Toast.LENGTH_SHORT).show()
         }
     }
+
+    // 传感器管理器
+    private var sensorManager: SensorManager? = null
+    private var pickUpListener: PickUpSensorListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -49,23 +55,53 @@ class MainActivity : ComponentActivity() {
         // 注意：每次启动 App 都会重置闹钟，确保它是最新的
         NotificationScheduler.scheduleDailyAlarm(this, 22, 30)
 
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_POWER_DISCONNECTED)
+        // 4. 注册解锁监听器
+        val unlockFilter = IntentFilter().apply {
             addAction(Intent.ACTION_USER_PRESENT)
         }
 
-        // 注意：Android 14+ 动态注册必须指定 RECEIVER_EXPORTED 或 RECEIVER_NOT_EXPORTED
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(PowerDisconnectReceiver(), filter, Context.RECEIVER_EXPORTED)
-            registerReceiver(UnlockReceiver(), filter, Context.RECEIVER_EXPORTED)
+            registerReceiver(UnlockReceiver(), unlockFilter, Context.RECEIVER_EXPORTED)
         } else {
-            registerReceiver(PowerDisconnectReceiver(), filter)
-            registerReceiver(UnlockReceiver(), filter)
+            registerReceiver(UnlockReceiver(), unlockFilter)
         }
+
+        // 5. 初始化加速度传感器
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        pickUpListener = PickUpSensorListener(this)
+        
+        // 注册加速度传感器监听器
+        sensorManager?.registerListener(
+            pickUpListener,
+            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
 
         setContent {
             App()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 在应用暂停时取消传感器注册以节省电量
+        sensorManager?.unregisterListener(pickUpListener)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 在应用恢复时重新注册传感器
+        sensorManager?.registerListener(
+            pickUpListener,
+            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 彻底取消传感器注册
+        sensorManager?.unregisterListener(pickUpListener)
     }
 }
 
