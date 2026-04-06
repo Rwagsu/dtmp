@@ -5,7 +5,9 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SENSORS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
@@ -34,7 +36,7 @@
         <!-- 🔥 注册传感器监控服务 (前台服务) -->
         <service
                 android:name=".SensorMonitorService"
-                android:foregroundServiceType="sensors"
+                android:foregroundServiceType="health"
                 android:exported="false" />
 
         <activity
