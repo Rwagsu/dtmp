@@ -32,6 +32,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // 传感器管理器
+    private var sensorManager: SensorManager? = null
+    private var pickUpListener: PickUpSensorListener? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -62,17 +66,42 @@ class MainActivity : ComponentActivity() {
             registerReceiver(UnlockReceiver(), unlockFilter)
         }
 
-        // 5. 🔥 启动前台服务来监听加速度传感器 (这样即使应用划到后台也能继续工作)
-        val sensorServiceIntent = Intent(this, SensorMonitorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(sensorServiceIntent)
-        } else {
-            startService(sensorServiceIntent)
-        }
+        // 5. 初始化加速度传感器
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        pickUpListener = PickUpSensorListener(this)
+        
+        // 注册加速度传感器监听器
+        sensorManager?.registerListener(
+            pickUpListener,
+            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
 
         setContent {
             App()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 在应用暂停时取消传感器注册以节省电量
+        sensorManager?.unregisterListener(pickUpListener)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 在应用恢复时重新注册传感器
+        sensorManager?.registerListener(
+            pickUpListener,
+            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 彻底取消传感器注册
+        sensorManager?.unregisterListener(pickUpListener)
     }
 }
 
