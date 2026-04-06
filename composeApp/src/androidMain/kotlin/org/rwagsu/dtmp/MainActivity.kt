@@ -21,6 +21,19 @@ import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
+    fun updateServiceStatus(isEnabled: Boolean) {
+        val serviceIntent = Intent(this, SensorMonitorService::class.java)
+        if (isEnabled) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+        } else {
+            stopService(serviceIntent)
+        }
+    }
+
     // 请求通知权限的 launcher
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -31,10 +44,6 @@ class MainActivity : ComponentActivity() {
             Toast.makeText(this, "啊...... 你是不是...... 点错了？😰", Toast.LENGTH_SHORT).show()
         }
     }
-
-    // 传感器管理器
-    private var sensorManager: SensorManager? = null
-    private var pickUpListener: PickUpSensorListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -66,42 +75,9 @@ class MainActivity : ComponentActivity() {
             registerReceiver(UnlockReceiver(), unlockFilter)
         }
 
-        // 5. 初始化加速度传感器
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        pickUpListener = PickUpSensorListener(this)
-        
-        // 注册加速度传感器监听器
-        sensorManager?.registerListener(
-            pickUpListener,
-            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-
         setContent {
             App()
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // 在应用暂停时取消传感器注册以节省电量
-        sensorManager?.unregisterListener(pickUpListener)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 在应用恢复时重新注册传感器
-        sensorManager?.registerListener(
-            pickUpListener,
-            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // 彻底取消传感器注册
-        sensorManager?.unregisterListener(pickUpListener)
     }
 }
 

@@ -56,9 +56,10 @@ fun App() {
             Switch(
                 checked = isEnabled,
                 onCheckedChange = { newValue ->
-                    // 点击开关时，保存到 DataStore
                     scope.launch {
                         SettingsManager.saveMyBoolean(context, newValue)
+                        // 🔥 这里是关键：根据开关更新闹钟计划
+                        MonitoringScheduler.updateSchedules(context, newValue)
                     }
                 }
             )

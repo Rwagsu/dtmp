@@ -5,7 +5,9 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -17,19 +19,27 @@
         <!-- 注册 Receiver -->
         <receiver android:name=".VariableCheckReceiver" android:exported="false" />
 
-        <!-- 注册电源断开接收器 -->
-        <receiver android:name=".PowerDisconnectReceiver" android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
-            </intent-filter>
-        </receiver>
-
         <!-- 注册解锁接收器 -->
         <receiver android:name=".UnlockReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".MonitoringReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="org.rwagsu.dtmp.START_MONITOR" />
+                <action android:name="org.rwagsu.dtmp.STOP_MONITOR" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+                android:name=".SensorMonitorService"
+                android:foregroundServiceType="specialUse"
+                android:exported="false" />
 
         <!-- 注册恶魔服务 -->
         <service

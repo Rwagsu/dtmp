@@ -16,12 +16,27 @@ class PickUpSensorListener(private val context: Context) : SensorEventListener {
     private var lastY = 0f
     private var lastZ = 0f
     private var isInitialized = false
-    private val THRESHOLD = 2.5f // 加速度变化阈值
-    private val TIME_WINDOW = 3000L // 3 秒内检测变化
-    private var lastTriggerTime = 0L
+
+    // 配置参数
+    private val THRESHOLD = 3.5f       // 灵敏度阈值 (建议 3.0 - 5.0 之间)
+    private val SAMPLE_INTERVAL = 1000L // 采样间隔：1000毫秒 (1秒)
+    private val TRIGGER_COOLDOWN = 5000L // 触发冷却：5秒 (防止连续响)
+
+    private var lastSampleTime = 0L    // 上次处理数据的时间
+    private var lastTriggerTime = 0L   // 上次响铃的时间
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null || event.sensor.type != Sensor.TYPE_ACCELEROMETER) return
+
+        val currentTime = System.currentTimeMillis()
+
+        // 🔥 核心省电逻辑：如果距离上次采样没到 1 秒，直接无视这条数据
+        if (currentTime - lastSampleTime < SAMPLE_INTERVAL) {
+            return
+        }
+
+        // 记录本次采样时间
+        lastSampleTime = currentTime
 
         val x = event.values[0]
         val y = event.values[1]
@@ -35,24 +50,21 @@ class PickUpSensorListener(private val context: Context) : SensorEventListener {
             return
         }
 
-        val currentTime = System.currentTimeMillis()
-        
-        // 计算加速度变化量
+        // 计算加速度变化量 (Δ)
         val delta = kotlin.math.sqrt(
             (x - lastX) * (x - lastX) +
-            (y - lastY) * (y - lastY) +
-            (z - lastZ) * (z - lastZ)
+                    (y - lastY) * (y - lastY) +
+                    (z - lastZ) * (z - lastZ)
         )
 
-        Log.d("OwOwO", "📱 [PickUp] Δ = $delta")
-
-        // 如果变化超过阈值，且不在冷却时间内，触发闹钟
-        if (delta > THRESHOLD && (currentTime - lastTriggerTime) > TIME_WINDOW) {
-            Log.d("OwOwO", "📱 [PickUp] 手机被拿起了! Δ = $delta")
+        // 只有变化足够大，且不在冷却期内，才触发
+        if (delta > THRESHOLD && (currentTime - lastTriggerTime) > TRIGGER_COOLDOWN) {
+            Log.d("OwOwO", "📱 [PickUp] 检测到有效挪动! Δ = $delta")
             checkAndTriggerAlarm(context)
             lastTriggerTime = currentTime
         }
 
+        // 更新坐标快照
         lastX = x
         lastY = y
         lastZ = z

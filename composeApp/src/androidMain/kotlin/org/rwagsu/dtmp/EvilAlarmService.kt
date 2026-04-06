@@ -30,8 +30,8 @@ class EvilAlarmService : Service() {
         createNotificationChannel()
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("恭喜你被耍了 ψ(｀∇´)ψ")
-            .setContentText("UNLOCK PHONE OR GIVE TO RWAGSU!")
+            .setContentTitle("恭喜你又被耍了 🤣🥳🤪")
+            .setContentText("没想到吧我更新啦 ψ(｀∇´)ψ")
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setPriority(NotificationCompat.PRIORITY_MAX) // 提到最高
             .setCategory(NotificationCompat.CATEGORY_ALARM) // 设置为闹钟类别
