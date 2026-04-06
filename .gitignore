@@ -3,35 +3,62 @@
 *.class
 *.jar
 *.war
-*.ear
 *.aar
+*.apk
+*.dex
 
 # Gradle
 .gradle/
 build/
+!gradle-wrapper.properties
 
 # Android
-*.apk
 *.ap_
-app/build/
-*/build/
+*.aab
+*.apks
+captures/
+.externalNativeBuild
+.nativetestconfig.xml
 
-# IDE files
+# IntelliJ IDEA
 .idea/
 *.iml
 *.ipr
 *.iws
-.vscode/
 
-# Temp files
+# Temporary files
 *.tmp
 *.temp
+*.swp
+*~
+
+# Logs
 *.log
 
-# OS files
-.DS_Store
-Thumbs.db
+# Environment variables
+.env
+.env.local
+*.env*
 
-# Local configuration
-local.properties
+# Coverage reports
+coverage/
+*.gcov
+*.lcov
+
+# Byte-compiled Python files
+*.pyc
+__pycache__/
+
+# Distribution / packaging
+.dist/
+*.tar.gz
+*.whl
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Icon?
 ```
